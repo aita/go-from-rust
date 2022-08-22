@@ -1,25 +1,17 @@
 use std::ffi::CString;
 use std::os::raw::c_char;
 
-#[repr(C)]
-struct Message {
-    id: i32,
-    text: *const c_char,
-}
-
-extern "C" {
-    fn greeting(message: *const Message);
-}
+include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 fn main() {
     let c_string: CString = CString::new("Hello Go").unwrap();
 
-    let message = Message {
+    let mut message = Message {
         id: 1,
-        text: c_string.as_ptr(),
+        text: c_string.as_ptr() as *mut c_char,
     };
 
     unsafe {
-        greeting(&message as *const Message);
+        greeting(&mut message as *mut Message);
     }
 }
