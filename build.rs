@@ -17,6 +17,7 @@ fn main() {
 
     let bindings = bindgen::Builder::default()
         .header(format!("{}/libgohello.h", out_dir))
+        .clang_arg("-I./go")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .generate()
         .expect("Unable to generate bindings");
