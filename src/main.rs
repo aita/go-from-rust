@@ -1,20 +1,18 @@
-use std::os::raw::{c_int, c_ulong, c_void};
+use std::os::raw::{c_ulong, c_void};
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-fn main() {
+unsafe extern "C" fn new_array(len: c_ulong, data: *mut c_void) -> *mut c_void {
     let mut buf = Vec::new();
-    let mut closure = |size: c_ulong, arr: *mut c_int| {
-        for i in 0..size {
-            buf.push(unsafe { *arr.offset(i as isize) });
-        }
-    };
-
-    let (state, callback) = unsafe { ffi_helpers::split_closure(&mut closure) };
-
-    unsafe {
-        send_array(state, Some(callback));
+    for i in 0..len {
+        buf.push(*(data as *mut i32).offset(i as isize));
     }
+    Box::into_raw(Box::new(buf)) as *mut c_void
+}
 
-    println!("{:?}", buf);
+fn main() {
+    let array = unsafe { send_array(Some(new_array)) as *mut Vec<i32> };
+    let array = unsafe { Box::from_raw(array) };
+
+    println!("{:?}", array);
 }
