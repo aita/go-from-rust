@@ -1,17 +1,20 @@
-use std::ffi::CString;
-use std::os::raw::c_char;
+use std::os::raw::{c_int, c_ulong, c_void};
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 fn main() {
-    let c_string: CString = CString::new("Hello Go").unwrap();
-
-    let mut message = Message {
-        id: 1,
-        text: c_string.as_ptr() as *mut c_char,
+    let mut buf = Vec::new();
+    let mut closure = |size: c_ulong, arr: *mut c_int| {
+        for i in 0..size {
+            buf.push(unsafe { *arr.offset(i as isize) });
+        }
     };
 
+    let (state, callback) = unsafe { ffi_helpers::split_closure(&mut closure) };
+
     unsafe {
-        greeting(&mut message as *mut Message);
+        send_array(state, Some(callback));
     }
+
+    println!("{:?}", buf);
 }

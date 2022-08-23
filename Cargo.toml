@@ -5,6 +5,7 @@ edition = "2021"
 build = "build.rs"
 
 [dependencies]
+ffi_helpers = "0.3.0"
 
 [build-dependencies]
 bindgen = "0.60.1"
